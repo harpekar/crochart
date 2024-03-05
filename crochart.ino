@@ -18,47 +18,71 @@
 
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, /* clock=*/14,/*data=*/12,U8X8_PIN_NONE);
 
-  int row_count;
-  int stitch_count;
+  int rowCount;
+  int stitchCount;
+
+  int rowsPerProject;
+  int stitchPerRow;
+
+void updateScreen(void) {
+
+  u8g2.clearBuffer();					// clear the internal memory
+
+  char buf[9];
+  sprintf(buf,"%d %d", rowCount, stitchCount);
+
+  u8g2.drawStr(0,10,buf);	// write to the internal memory
+  u8g2.sendBuffer();					// transfer internal memory to the display
+
+}
 
 void setup(void) {
   u8g2.begin();
+  u8g2.setFont(u8g2_font_ncenB08_tr);	// choose a suitable font
+
+
   pinMode(5, INPUT_PULLUP);
   pinMode(4, INPUT_PULLUP); 
 
-  row_count = 0;
-  stitch_count = 0;
+  rowCount = 0;
+  stitchCount = 0;
+
+  stitchPerRow = 10;
+
+  updateScreen();
 
 }
 
 void loop(void) {
 
-  int row_val = digitalRead(5);
-  int stitch_val = digitalRead(4);
+  int rowVal = digitalRead(5);
+  int stitchVal = digitalRead(4);
   //Serial.println(val);
 
-  if (row_val == LOW) { 
+  if (rowVal == LOW) { 
 
-      row_count++;  
+      rowCount++;  
+      stitchCount = 0;
       //delay(1000); 
+      updateScreen();
 
   } 
 
-  if (stitch_val == LOW) {
+  if (stitchVal == LOW) {
 
-      stitch_count++;
+      stitchCount++;
+
+      if (stitchCount == stitchPerRow) {
+
+        stitchCount = 0; 
+        rowCount++;
+
+      }
+
+      updateScreen();
 
   }
 
-  delay(250);
-  
-  u8g2.clearBuffer();					// clear the internal memory
-  u8g2.setFont(u8g2_font_ncenB08_tr);	// choose a suitable font
-
-  char buf[9];
-  sprintf(buf,"%d %d", row_count, stitch_count);
-
-  u8g2.drawStr(0,10,buf);	// write something to the internal memory
-  u8g2.sendBuffer();					// transfer internal memory to the display
+  //delay(200);
 
 }
